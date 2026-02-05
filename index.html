@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: white;
+        }
+
+        .container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            width: 400px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            outline: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #764ba2;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-btn {
+            background: transparent;
+            color: white;
+            margin-top: 10px;
+            font-size: 12px;
+            text-decoration: underline;
+            width: auto;
+            display: inline-block;
+        }
+
+        #msg {
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="register-container">
+        <h2>Event Registration</h2>
+        <div class="input-group"><input id="name" type="text" placeholder="Full Name"></div>
+        <div class="input-group"><input id="email" type="email" placeholder="Email Address"></div>
+        <div class="input-group"><input id="phone" type="tel" placeholder="Phone Number"></div>
+        <div class="input-group"><input id="college" type="text" placeholder="College Name"></div>
+
+        <button onclick="submitForm('register')">Register Now</button>
+        <div class="spinner" id="spinner"></div>
+        <p id="msg"></p>
+
+        <button class="toggle-btn" onclick="toggleView()">Already registered? Check Status</button>
+    </div>
+
+    <div class="container hidden" id="login-container">
+        <h2>Check Status</h2>
+        <div class="input-group"><input id="login-email" type="email" placeholder="Enter your registered Email"></div>
+
+        <button onclick="submitForm('login')">Check Allocation</button>
+        <div class="spinner" id="login-spinner"></div>
+        <p id="login-msg"></p>
+
+        <button class="toggle-btn" onclick="toggleView()">New User? Register</button>
+    </div>
+
+    <script>
+        // REPLACE THIS URL WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbx2KS1QSHbOOm4kxfdIFXSJ3SvwYmxHKk8WQgHtdVJBs4xqph729MGNrl8BOGI9LYNPuw/exec";
+        function toggleView() {
+            document.getElementById('register-container').classList.toggle('hidden');
+            document.getElementById('login-container').classList.toggle('hidden');
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.getElementById('msg').innerText = "";
+            document.getElementById('login-msg').innerText = "";
+        }
+
+        function submitForm(action) {
+            let data = { action: action };
+            let spinnerFn, msgFn;
+
+            if (action === 'register') {
+                data.name = document.getElementById("name").value;
+                data.email = document.getElementById("email").value;
+                data.phone = document.getElementById("phone").value;
+                data.college = document.getElementById("college").value;
+                spinnerFn = document.getElementById("spinner");
+                msgFn = document.getElementById("msg");
+
+                if (!data.name || !data.email || !data.phone || !data.college) {
+                    msgFn.innerText = "Please fill all fields.";
+                    msgFn.style.color = "#ffdddd";
+                    return;
+                }
+            } else {
+                data.email = document.getElementById("login-email").value;
+                spinnerFn = document.getElementById("login-spinner");
+                msgFn = document.getElementById("login-msg");
+
+                if (!data.email) {
+                    msgFn.innerText = "Please enter email.";
+                    msgFn.style.color = "#ffdddd";
+                    return;
+                }
+            }
+
+            if (API_URL === "INSERT_YOUR_GOOGLE_SCRIPT_URL_HERE") {
+                alert("Please deploy the Google Script and paste the URL in index.html line 125!");
+                return;
+            }
+
+            spinnerFn.style.display = "block";
+            msgFn.innerText = "";
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(response => {
+                    spinnerFn.style.display = "none";
+                    if (response.status === "success") {
+                        msgFn.style.color = "#ccffcc"; // Light green
+                        if (action === 'register') {
+                            msgFn.innerHTML = `Success! Assigned to:<br><b>${response.data.batch}</b> - <b>${response.data.classroom}</b>`;
+                        } else {
+                            msgFn.innerHTML = `Welcome back!<br>You are in <b>${response.data.batch}</b> - <b>${response.data.classroom}</b>`;
+                        }
+                    } else {
+                        msgFn.style.color = "#ffdddd"; // Light red
+                        msgFn.innerText = response.message;
+                    }
+                })
+                .catch(err => {
+                    spinnerFn.style.display = "none";
+                    msgFn.style.color = "#ffdddd";
+                    msgFn.innerText = "Error connecting to server.";
+                    console.error(err);
+                });
+        }
+    </script>
+
+</body>
+
+</html>

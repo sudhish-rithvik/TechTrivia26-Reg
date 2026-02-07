@@ -4,121 +4,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Registration</title>
+    <title>TechTrivia Registration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Static rich gradient background */
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            /* Alternative deep tech blue: background: linear-gradient(to right, #4e54c8, #8f94fb); */
+            /* I'll use a deep 3-color static gradient for richness */
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            /* "2024 Tech" Look */
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
             color: white;
+            overflow: hidden;
         }
 
-        .container {
-            position: relative;
+        .glass-card {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 40px;
-            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            width: 400px;
-            text-align: center;
-            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
         }
 
         h2 {
-            margin-bottom: 20px;
-            font-weight: 600;
-            letter-spacing: 1px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        p.subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 30px;
         }
 
         .input-group {
-            margin-bottom: 15px;
-            text-align: left;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            outline: none;
-            border-radius: 8px;
+            padding: 15px 15px 15px 45px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             transition: 0.3s;
         }
 
         input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.6);
         }
 
         input:focus {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            outline: none;
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            background: white;
-            color: #764ba2;
+            padding: 15px;
+            background: linear-gradient(45deg, #FF512F 0%, #DD2476 100%);
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
             transition: 0.3s;
             margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(221, 36, 118, 0.4);
         }
 
         button:hover {
             transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 20px rgba(221, 36, 118, 0.6);
         }
 
-        .toggle-btn {
-            background: transparent;
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #999;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .toggle-text {
+            display: block;
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .toggle-text:hover {
             color: white;
-            margin-top: 10px;
-            font-size: 12px;
             text-decoration: underline;
-            width: auto;
-            display: inline-block;
         }
 
         #msg {
             margin-top: 15px;
             font-size: 14px;
             min-height: 20px;
+            font-weight: 500;
+        }
+
+        /* TICKET STYLE SUCCESS */
+        .ticket {
+            background: white;
+            color: #333;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            margin-top: 20px;
+            animation: slideUp 0.5s ease;
+            position: relative;
+        }
+
+        .ticket-header {
+            background: #23a6d5;
+            color: white;
+            padding: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-body {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+
+        .ticket-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .ticket-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .ticket-value {
+            font-weight: 700;
+            font-size: 16px;
+            color: #222;
         }
 
         .hidden {
             display: none;
         }
 
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Loading Spinner */
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
             display: none;
-            margin: 0 auto;
+            margin: 15px auto;
         }
 
         @keyframes spin {
@@ -130,39 +247,199 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Floating Circles Background */
+        .circles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .circles li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            animation: animate 25s linear infinite;
+            bottom: -150px;
+            border-radius: 50%;
+        }
+
+        .circles li:nth-child(1) {
+            left: 25%;
+            width: 80px;
+            height: 80px;
+            animation-delay: 0s;
+        }
+
+        .circles li:nth-child(2) {
+            left: 10%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 2s;
+            animation-duration: 12s;
+        }
+
+        .circles li:nth-child(3) {
+            left: 70%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 4s;
+        }
+
+        .circles li:nth-child(4) {
+            left: 40%;
+            width: 60px;
+            height: 60px;
+            animation-delay: 0s;
+            animation-duration: 18s;
+        }
+
+        .circles li:nth-child(5) {
+            left: 65%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 0s;
+        }
+
+        @keyframes animate {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="container" id="register-container">
-        <h2>Event Registration</h2>
-        <div class="input-group"><input id="name" type="text" placeholder="Full Name"></div>
-        <div class="input-group"><input id="email" type="email" placeholder="Email Address"></div>
-        <div class="input-group"><input id="phone" type="tel" placeholder="Phone Number"></div>
-        <div class="input-group"><input id="college" type="text" placeholder="College Name"></div>
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
 
-        <button onclick="submitForm('register')">Register Now</button>
+    <div class="glass-card" id="register-container">
+        <h2>Join TechTrivia</h2>
+        <p class="subtitle">Secure your spot now</p>
+
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input id="name" type="text" placeholder="Full Name">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input id="email" type="email" placeholder="Email Address">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-phone"></i>
+            <input id="phone" type="tel" placeholder="Phone Number">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-university"></i>
+            <input id="college" type="text" placeholder="College / Organization">
+        </div>
+
+        <button id="reg-btn" onclick="submitForm('register')">Get My Ticket</button>
         <div class="spinner" id="spinner"></div>
-        <p id="msg"></p>
 
-        <button class="toggle-btn" onclick="toggleView()">Already registered? Check Status</button>
+        <!-- Ticket UI -->
+        <div id="reg-ticket" class="ticket">
+            <div class="ticket-header">
+                <span><i class="fas fa-ticket-alt"></i> ADMIT ONE</span>
+                <span id="reg-id-badge">#000</span>
+            </div>
+            <div class="ticket-body">
+                <div class="ticket-row">
+                    <div>
+                        <div class="ticket-label">Batch</div>
+                        <div class="ticket-value" id="reg-batch">-</div>
+                    </div>
+                    <div>
+                        <div class="ticket-label">Classroom</div>
+                        <div class="ticket-value" id="reg-room">-</div>
+                    </div>
+                </div>
+                <div class="ticket-row">
+                    <div>
+                        <div class="ticket-label">Seat Number</div>
+                        <div class="ticket-value" style="color: #E73C7E; font-size: 20px;" id="reg-seat">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p id="msg"></p>
+        <a class="toggle-text" onclick="toggleView()">Already registered? Check Status</a>
     </div>
 
-    <div class="container hidden" id="login-container">
+    <!-- Login Container -->
+    <div class="glass-card hidden" id="login-container">
         <h2>Check Status</h2>
-        <div class="input-group"><input id="login-email" type="email" placeholder="Enter your registered Email"></div>
+        <p class="subtitle">View your allocation details</p>
 
-        <button onclick="submitForm('login')">Check Allocation</button>
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input id="login-email" type="email" placeholder="Registered Email">
+        </div>
+
+        <button id="login-btn" onclick="submitForm('login')">Find My Seat</button>
         <div class="spinner" id="login-spinner"></div>
-        <p id="login-msg"></p>
 
-        <button class="toggle-btn" onclick="toggleView()">New User? Register</button>
+        <!-- Ticket UI Login -->
+        <div id="login-ticket" class="ticket">
+            <div class="ticket-header">
+                <span><i class="fas fa-check-circle"></i> CONFIRMED</span>
+                <span id="login-id-badge">#000</span>
+            </div>
+            <div class="ticket-body">
+                <div class="ticket-row">
+                    <div>
+                        <div class="ticket-label">Batch</div>
+                        <div class="ticket-value" id="login-batch">-</div>
+                    </div>
+                    <div>
+                        <div class="ticket-label">Classroom</div>
+                        <div class="ticket-value" id="login-room">-</div>
+                    </div>
+                </div>
+                <div class="ticket-row">
+                    <div>
+                        <div class="ticket-label">Seat Number</div>
+                        <div class="ticket-value" style="color: #E73C7E; font-size: 20px;" id="login-seat">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p id="login-msg"></p>
+        <a class="toggle-text" onclick="toggleView()">&larr; Back to Registration</a>
     </div>
 
     <script>
-        // REPLACE THIS URL WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbx2KS1QSHbOOm4kxfdIFXSJ3SvwYmxHKk8WQgHtdVJBs4xqph729MGNrl8BOGI9LYNPuw/exec";
+        // Your existing Deployment URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbwD03Xq-58sor5iODcLf_CrB7HmaGqqwKXGhBmsAJNDFlQRJFcLS76cg7q59Bnc_UyjIw/exec";
+
         function toggleView() {
             document.getElementById('register-container').classList.toggle('hidden');
             document.getElementById('login-container').classList.toggle('hidden');
@@ -172,19 +449,31 @@
         function clearMessages() {
             document.getElementById('msg').innerText = "";
             document.getElementById('login-msg').innerText = "";
+            document.getElementById('reg-ticket').style.display = "none";
+            document.getElementById('login-ticket').style.display = "none";
         }
 
-        function submitForm(action) {
+        async function submitForm(action, retryCount = 0) {
             let data = { action: action };
-            let spinnerFn, msgFn;
+            let spinnerFn, msgFn, btnFn, ticketFn, updates = {};
 
             if (action === 'register') {
                 data.name = document.getElementById("name").value;
                 data.email = document.getElementById("email").value;
                 data.phone = document.getElementById("phone").value;
                 data.college = document.getElementById("college").value;
+
                 spinnerFn = document.getElementById("spinner");
                 msgFn = document.getElementById("msg");
+                btnFn = document.getElementById("reg-btn");
+                ticketFn = document.getElementById("reg-ticket");
+
+                updates = {
+                    id: document.getElementById("reg-id-badge"),
+                    batch: document.getElementById("reg-batch"),
+                    room: document.getElementById("reg-room"),
+                    seat: document.getElementById("reg-seat")
+                };
 
                 if (!data.name || !data.email || !data.phone || !data.college) {
                     msgFn.innerText = "Please fill all fields.";
@@ -193,8 +482,18 @@
                 }
             } else {
                 data.email = document.getElementById("login-email").value;
+
                 spinnerFn = document.getElementById("login-spinner");
                 msgFn = document.getElementById("login-msg");
+                btnFn = document.getElementById("login-btn");
+                ticketFn = document.getElementById("login-ticket");
+
+                updates = {
+                    id: document.getElementById("login-id-badge"),
+                    batch: document.getElementById("login-batch"),
+                    room: document.getElementById("login-room"),
+                    seat: document.getElementById("login-seat")
+                };
 
                 if (!data.email) {
                     msgFn.innerText = "Please enter email.";
@@ -203,42 +502,62 @@
                 }
             }
 
-            if (API_URL === "INSERT_YOUR_GOOGLE_SCRIPT_URL_HERE") {
-                alert("Please deploy the Google Script and paste the URL in index.html line 125!");
-                return;
+            if (retryCount === 0) {
+                spinnerFn.style.display = "block";
+                btnFn.disabled = true;
+                msgFn.innerText = "";
+                ticketFn.style.display = "none";
+            } else {
+                msgFn.innerText = `Server busy, retrying... (${retryCount})`;
+                msgFn.style.color = "#ffffcc";
             }
 
-            spinnerFn.style.display = "block";
-            msgFn.innerText = "";
-
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(data)
-            })
-                .then(res => res.json())
-                .then(response => {
-                    spinnerFn.style.display = "none";
-                    if (response.status === "success") {
-                        msgFn.style.color = "#ccffcc"; // Light green
-                        if (action === 'register') {
-                            msgFn.innerHTML = `Success! Assigned to:<br><b>${response.data.batch}</b> - <b>${response.data.classroom}</b>`;
-                        } else {
-                            msgFn.innerHTML = `Welcome back!<br>You are in <b>${response.data.batch}</b> - <b>${response.data.classroom}</b>`;
-                        }
-                    } else {
-                        msgFn.style.color = "#ffdddd"; // Light red
-                        msgFn.innerText = response.message;
-                    }
-                })
-                .catch(err => {
-                    spinnerFn.style.display = "none";
-                    msgFn.style.color = "#ffdddd";
-                    msgFn.innerText = "Error connecting to server.";
-                    console.error(err);
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(data)
                 });
+
+                const result = await response.json();
+
+                if (result.status === "busy" && retryCount < 3) {
+                    await new Promise(r => setTimeout(r, 2000 * (retryCount + 1)));
+                    submitForm(action, retryCount + 1);
+                    return;
+                }
+
+                spinnerFn.style.display = "none";
+                btnFn.disabled = false;
+
+                if (result.status === "success") {
+                    msgFn.innerText = "";
+                    ticketFn.style.display = "block";
+
+                    // Update Ticket Data
+                    updates.id.innerText = "#" + result.data.id;
+                    updates.batch.innerText = result.data.batch;
+                    updates.room.innerText = result.data.classroom;
+                    updates.seat.innerText = result.data.seat;
+
+                } else {
+                    msgFn.style.color = "#ffdddd";
+                    msgFn.innerText = result.message;
+                }
+
+            } catch (err) {
+                console.error(err);
+                if (retryCount < 3) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    submitForm(action, retryCount + 1);
+                } else {
+                    spinnerFn.style.display = "none";
+                    btnFn.disabled = false;
+                    msgFn.style.color = "#ffdddd";
+                    msgFn.innerText = "Connection failed. Please try again.";
+                }
+            }
         }
     </script>
-
 </body>
 
 </html>

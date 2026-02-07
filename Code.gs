@@ -1,19 +1,30 @@
 function doPost(e) {
   var lock = LockService.getScriptLock();
-  lock.tryLock(10000); // Wait up to 10s for other processes
+  // Wait up to 30 seconds for other processes to finish.
+  try {
+    lock.waitLock(30000); 
+  } catch (e) {
+    return createJSONOutput({ status: "busy", message: "Server is busy. Please retry." });
+  }
 
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var props = PropertiesService.getScriptProperties();
     
     // Parse data
-    var data = JSON.parse(e.postData.contents);
+    var data;
+    try {
+        data = JSON.parse(e.postData.contents);
+    } catch (parseErr) {
+        return createJSONOutput({ status: "error", message: "Invalid JSON data" });
+    }
+
     var name = data.name;
     var email = data.email;
     var phone = data.phone;
     var college = data.college;
     var action = data.action; 
 
-    // --- HELPER TO FIND USER IN ANY BATCH SHEET ---
     var foundUser = findUserByEmail(ss, email);
 
     if (action === "login") {
@@ -24,101 +35,107 @@ function doPost(e) {
       }
     }
 
-    // --- REGISTRATION LOGIC ---
     if (foundUser) {
       return createJSONOutput({ status: "error", message: "User already registered!", data: foundUser });
     }
 
-    // Find Active Batch Sheet
-    var batchNum = 1;
-    var MAX_PER_BATCH = 180; // 3 rooms * 60
-    var activeSheet = null;
-    var totalGlobalCount = 0;
+    // --- BATCH MANAGEMENT ---
+    var MAX_PER_BATCH = 180;
+    
+    // Get current active batch number
+    var currentBatchNum = parseInt(props.getProperty("CURRENT_BATCH_NUM")) || 1;
+    var sheetName = "Batch " + currentBatchNum;
+    var activeSheet = ss.getSheetByName(sheetName);
 
-    while (true) {
-      var sheetName = "Batch " + batchNum;
-      var sheet = ss.getSheetByName(sheetName);
-      
-      if (!sheet) {
-        // Create new batch sheet
-        activeSheet = ss.insertSheet(sheetName);
-        activeSheet.appendRow(["Timestamp", "Student ID", "Name", "Email", "Phone", "College", "Batch", "Classroom"]);
-        // If this is Batch 1, total previous users is 0. If Batch 2, it's 180 etc.
-        // Actually simpler to just track activeSheet context
-        break;
-      }
-      
-      var lastRow = sheet.getLastRow();
-      // "lastRow" includes header. So data count is lastRow - 1.
-      var dataCount = lastRow - 1;
-      
-      // Accumulate global count from full previous sheets
-      if (dataCount >= MAX_PER_BATCH) {
-        totalGlobalCount += dataCount;
-        batchNum++;
-        continue; // Check next batch
-      } else {
-        // Found a sheet with space
-        activeSheet = sheet;
-        totalGlobalCount += dataCount; // Add existing users in this current sheet
-        break;
-      }
+    if (!activeSheet) {
+      activeSheet = createBatchSheet(ss, sheetName);
     }
 
-    // Calculate details for NEW user
-    var newGlobalID = totalGlobalCount + 1;
+    // Check capacity
+    var currentCountInBatch = activeSheet.getLastRow() - 1;
+
+    if (currentCountInBatch >= MAX_PER_BATCH) {
+      currentBatchNum++;
+      props.setProperty("CURRENT_BATCH_NUM", currentBatchNum.toString());
+      
+      sheetName = "Batch " + currentBatchNum;
+      activeSheet = createBatchSheet(ss, sheetName);
+      currentCountInBatch = 0;
+    }
+
+    // Global Counter
+    var globalCount = parseInt(props.getProperty("GLOBAL_COUNT")) || 0;
+    globalCount++;
+    props.setProperty("GLOBAL_COUNT", globalCount.toString());
+
+    // --- ALLOCATION LOGIC ---
+    var positionInBatch = currentCountInBatch + 1; // 1 to 180
     
-    // Calculate Position in THIS batch (1-based)
-    var positionInBatch = (activeSheet.getLastRow() - 1) + 1; 
+    // Room: 1-60 -> R1, 61-120 -> R2, 121-180 -> R3
+    var classroomNum = Math.ceil(positionInBatch / 60); 
     
-    // Room Logic: 
-    // 1-60 -> Room 1
-    // 61-120 -> Room 2
-    // 121-180 -> Room 3
-    var classroom = Math.ceil(positionInBatch / 60); 
-    
-    var batchName = "Batch " + batchNum;
-    var classroomName = "Classroom " + classroom;
+    // Seat: 1-60 per room
+    // If pos=1 -> (0%60)+1 = 1
+    // If pos=60 -> (59%60)+1 = 60
+    // If pos=61 -> (60%60)+1 = 1
+    var seatNumber = ((positionInBatch - 1) % 60) + 1;
+
+    var batchName = "Batch " + currentBatchNum;
+    var classroomName = "Classroom " + classroomNum;
+    var seatStr = "Seat " + seatNumber;
 
     // Append to Sheet
     activeSheet.appendRow([
       new Date(), 
-      newGlobalID, 
+      globalCount, 
       name, 
       email, 
       phone, 
       college, 
       batchName, 
-      classroomName
+      classroomName,
+      seatStr
     ]);
+
+    var responseData = { 
+      batch: batchName, 
+      classroom: classroomName, 
+      seat: seatStr, 
+      id: globalCount 
+    };
 
     return createJSONOutput({ 
       status: "success", 
       message: "Registration Successful!", 
-      data: { batch: batchName, classroom: classroomName } 
+      data: responseData
     });
 
   } catch (err) {
-    return createJSONOutput({ status: "error", message: err.toString() });
+    return createJSONOutput({ status: "error", message: "Server Error: " + err.toString() });
   } finally {
     lock.releaseLock();
   }
+}
+
+function createBatchSheet(ss, name) {
+  var sheet = ss.insertSheet(name);
+  sheet.appendRow(["Timestamp", "Student ID", "Name", "Email", "Phone", "College", "Batch", "Classroom", "Seat Number"]);
+  return sheet;
 }
 
 function findUserByEmail(ss, email) {
   var sheets = ss.getSheets();
   for (var i = 0; i < sheets.length; i++) {
     var sheet = sheets[i];
-    var name = sheet.getName();
-    if (name.startsWith("Batch ")) {
+    if (sheet.getName().startsWith("Batch ")) {
       var data = sheet.getDataRange().getValues();
-      // Skip header (r=1)
       for (var r = 1; r < data.length; r++) {
-        // Email is at index 3 in new format: [Timestamp, ID, Name, Email...]
-        if (data[r][3] == email) {
+        if (data[r][3] == email) { 
           return {
-            batch: data[r][6], // Batch column index
-            classroom: data[r][7] // Classroom column index
+            batch: data[r][6],
+            classroom: data[r][7],
+            seat: data[r][8], // Seat is now at index 8
+            id: data[r][1]
           };
         }
       }
